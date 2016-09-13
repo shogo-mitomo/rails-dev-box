@@ -19,12 +19,26 @@ apt-get -y update >/dev/null 2>&1
 
 install 'development tools' build-essential
 
-install Ruby ruby2.3 ruby2.3-dev
-update-alternatives --set ruby /usr/bin/ruby2.3 >/dev/null 2>&1
-update-alternatives --set gem /usr/bin/gem2.3 >/dev/null 2>&1
+install 'ruby-build dependencies' autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm3 libgdbm-dev
 
-echo installing Bundler
-gem install bundler -N >/dev/null 2>&1
+readonly RBENV_PATH=/usr/local/rbenv
+readonly RBENV_CONF=/etc/profile.d/rbenv.conf.sh
+
+git clone 'https://github.com/rbenv/rbenv.git' $RBENV_PATH
+git clone 'https://github.com/sstephenson/ruby-build.git' "$RBENV_PATH/plugins/ruby-build"
+
+printf 'export RBENV_ROOT=/usr/local/rbenv\n' >> $RBENV_CONF
+printf 'export PATH=$RBENV_ROOT/bin:$PATH\n'  >> $RBENV_CONF
+printf 'eval "$(rbenv init -)"\n'             >> $RBENV_CONF
+
+readonly RUBY_VERSION=2.3.1
+
+source $RBENV_CONF
+
+rbenv install $RUBY_VERSION
+rbenv global $RUBY_VERSION
+
+gem i bundler
 
 install Git git
 install SQLite sqlite3 libsqlite3-dev
@@ -49,7 +63,7 @@ sudo -u postgres createdb -O vagrant activerecord_unittest2
 # GRANT ALL PRIVILEGES ON inexistent_activerecord_unittest.* to 'rails'@'localhost';
 # SQL
 
-printf "\nexport NOKOGIRI_USE_SYSTEM_LIBRARIES=1\n" >> /home/vagrant/.bashrc
+printf "\nexport NOKOGIRI_USE_SYSTEM_LIBRARIES=1\n" >> $RBENV_CONF
 install 'Nokogiri dependencies' libxml2 libxml2-dev libxslt1-dev
 install 'Blade dependencies' libncurses5-dev
 install 'ExecJS runtime' nodejs
